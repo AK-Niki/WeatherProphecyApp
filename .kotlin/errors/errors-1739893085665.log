@@ -68,12 +68,7 @@ FUN name:WeatherProphecyAppTheme visibility:public modality:FINAL <> (darkTheme:
             arg1: CALL 'public final fun greaterOrEqual (arg0: kotlin.Int, arg1: kotlin.Int): kotlin.Boolean declared in kotlin.internal.ir' type=kotlin.Boolean origin=GTEQ
               arg0: GET_FIELD 'FIELD IR_EXTERNAL_JAVA_DECLARATION_STUB name:SDK_INT type:kotlin.Int visibility:public [final,static]' type=kotlin.Int origin=null
               arg1: CONST Int type=kotlin.Int value=31
-          then: BLOCK type=androidx.compose.material3.ColorScheme origin=null
-            VAR name:context type:android.content.Context [val]
-              CALL 'public final fun <get-current> (): T of androidx.compose.runtime.CompositionLocal [inline] declared in androidx.compose.runtime.CompositionLocal' type=android.content.Context origin=GET_PROPERTY
-                $this: TYPE_OP type=androidx.compose.runtime.CompositionLocal<T of androidx.compose.runtime.CompositionLocal> origin=IMPLICIT_CAST typeOperand=androidx.compose.runtime.CompositionLocal<T of androidx.compose.runtime.CompositionLocal>
-                  CALL 'public final fun <get-LocalContext> (): androidx.compose.runtime.ProvidableCompositionLocal<android.content.Context> declared in androidx.compose.ui.platform.AndroidCompositionLocals_androidKt' type=androidx.compose.runtime.ProvidableCompositionLocal<android.content.Context> origin=GET_PROPERTY
-            WHEN type=androidx.compose.material3.ColorScheme origin=IF
+          then: BLOCK
               BRANCH
                 if: GET_VAR 'darkTheme: kotlin.Boolean declared in ru.netology.weatherprophecyapp.ui.theme.ThemeKt.WeatherProphecyAppTheme' type=kotlin.Boolean origin=null
                 then: CALL 'public final fun dynamicDarkColorScheme (context: android.content.Context): androidx.compose.material3.ColorScheme declared in androidx.compose.material3.DynamicTonalPaletteKt' type=androidx.compose.material3.ColorScheme origin=null
