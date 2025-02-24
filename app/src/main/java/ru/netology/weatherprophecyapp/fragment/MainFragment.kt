@@ -1,64 +1,50 @@
 package ru.netology.weatherprophecyapp.fragment
 
-import android.os.Bundle
-import androidx.fragment.app.Fragment
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
-import ru.netology.weatherprophecyapp.databinding.FragmentMainBinding
 import android.Manifest
-import android.widget.Toast
-import androidx.activity.result.ActivityResultLauncher
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.fragment.app.FragmentActivity
-import com.google.android.material.tabs.TabLayoutMediator
-import ru.netology.weatherprophecyapp.R
-import ru.netology.weatherprophecyapp.adapters.VpAdapter
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.location.Geocoder
 import android.location.Location
+import android.location.LocationListener
 import android.location.LocationManager
-import android.os.Looper
+import android.os.Bundle
 import android.provider.Settings
-import android.util.Log
-import androidx.appcompat.app.AppCompatActivity
+import android.widget.Toast
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.app.ActivityCompat
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.activityViewModels
-import ru.netology.weatherprophecyapp.DialogManager
-import com.android.volley.Request
-import com.android.volley.toolbox.StringRequest
-import com.android.volley.toolbox.Volley
-import com.google.android.gms.location.*
-import com.google.android.gms.tasks.*
-import ru.netology.weatherprophecyapp.MainViewModel
-import ru.netology.weatherprophecyapp.DayItem
+import com.google.android.material.tabs.TabLayoutMediator
 import com.squareup.picasso.Picasso
-import org.json.JSONObject
+import ru.netology.weatherprophecyapp.MainViewModel
+import ru.netology.weatherprophecyapp.R
+import ru.netology.weatherprophecyapp.adapters.VpAdapter
 import ru.netology.weatherprophecyapp.adapters.WeatherModel
-import java.lang.NumberFormatException
-import com.google.android.gms.location.Priority
-import com.google.android.gms.location.FusedLocationProviderClient
-import com.google.android.gms.location.LocationRequest
-import com.google.android.gms.location.LocationServices
-import com.google.android.gms.tasks.CancellationTokenSource
+import ru.netology.weatherprophecyapp.databinding.FragmentMainBinding
+import ru.netology.weatherprophecyapp.DialogManager
 
-
-const val API_KEY = "c8061dfa33e84347937124644251402"
+const val API_KEY = ""
 
 class MainFragment : Fragment() {
-    private lateinit var fLocationClient: FusedLocationProviderClient
+    private lateinit var locationManager: LocationManager
+    private lateinit var locationListener: LocationListener
+    private lateinit var pLauncher: ActivityResultLauncher<String>
+    private lateinit var binding: FragmentMainBinding
+    private val model: MainViewModel by activityViewModels()
+
     private val fList = listOf(
         HoursFragment.newInstance(),
         DaysFragment.newInstance()
     )
     private val tList = listOf("Hours", "Days")
-    private lateinit var pLauncher: ActivityResultLauncher<String>
-    private lateinit var binding: FragmentMainBinding
-    private val model: MainViewModel by activityViewModels()
 
-    override fun onCreateView(inflater: android.view.LayoutInflater, container: android.view.ViewGroup?, savedInstanceState: Bundle?): android.view.View {
+    override fun onCreateView(
+        inflater: android.view.LayoutInflater,
+        container: android.view.ViewGroup?,
+        savedInstanceState: Bundle?
+    ): android.view.View {
         binding = FragmentMainBinding.inflate(inflater, container, false)
         return binding.root
     }
@@ -76,7 +62,18 @@ class MainFragment : Fragment() {
     }
 
     private fun init() = with(binding) {
-        fLocationClient = LocationServices.getFusedLocationProviderClient(requireContext())
+        locationManager = requireContext().getSystemService(Context.LOCATION_SERVICE) as LocationManager
+
+        locationListener = object : LocationListener {
+            override fun onLocationChanged(location: Location) {
+                requestWeatherData("${location.latitude},${location.longitude}")
+                locationManager.removeUpdates(this)
+            }
+            override fun onStatusChanged(provider: String?, status: Int, extras: Bundle?) {}
+            override fun onProviderEnabled(provider: String) {}
+            override fun onProviderDisabled(provider: String) {}
+        }
+
         val adapter = VpAdapter(activity as FragmentActivity, fList)
         vp.adapter = adapter
         TabLayoutMediator(tabLayout, vp) { tab, pos ->
@@ -87,7 +84,6 @@ class MainFragment : Fragment() {
             checkLocation()
         }
         ibSearch.setOnClickListener {
-            // Стандартный диалог поиска, без автодополнения
             DialogManager.searchByNameDialog(requireContext(), object : DialogManager.Listener {
                 override fun onClick(name: String?) {
                     name?.let { requestWeatherData(it) }
@@ -109,23 +105,29 @@ class MainFragment : Fragment() {
     }
 
     private fun isLocationEnabled(): Boolean {
-        val lm = activity?.getSystemService(Context.LOCATION_SERVICE) as LocationManager
-        return lm.isProviderEnabled(LocationManager.GPS_PROVIDER)
+        val lm = requireContext().getSystemService(Context.LOCATION_SERVICE) as LocationManager
+        return lm.isProviderEnabled(LocationManager.GPS_PROVIDER) ||
+                lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
     }
 
     private fun getLocation() {
-        val ct = CancellationTokenSource()
-        if (androidx.core.app.ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
-            androidx.core.app.ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED
-        ) {
+        if (ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+            ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             return
         }
-        fLocationClient.getCurrentLocation(Priority.PRIORITY_HIGH_ACCURACY, ct.token)
-            .addOnCompleteListener {
-                it.result?.let { location ->
-                    requestWeatherData("${location.latitude},${location.longitude}")
-                }
-            }
+        val gpsLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
+        val networkLocation = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER)
+        val location = gpsLocation ?: networkLocation
+        if (location != null) {
+            requestWeatherData("${location.latitude},${location.longitude}")
+        } else {
+            locationManager.requestLocationUpdates(
+                LocationManager.GPS_PROVIDER,
+                5000,
+                10f,
+                locationListener
+            )
+        }
     }
 
     private fun updateCurrentCard() = with(binding) {
@@ -162,3 +164,4 @@ class MainFragment : Fragment() {
         fun newInstance() = MainFragment()
     }
 }
+
