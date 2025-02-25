@@ -19,3 +19,4 @@ class WeatherRepository {
         return if (response.isSuccessful) response.body()?.string() else null
     }
 }
+

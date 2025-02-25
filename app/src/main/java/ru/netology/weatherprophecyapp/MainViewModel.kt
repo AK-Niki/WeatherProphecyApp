@@ -3,8 +3,11 @@ package ru.netology.weatherprophecyapp
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.launch
 import org.json.JSONObject
+import ru.netology.weatherprophecyapp.adapters.HourItem
 import ru.netology.weatherprophecyapp.adapters.WeatherModel
 import ru.netology.weatherprophecyapp.repository.WeatherRepository
 
@@ -32,8 +35,12 @@ class MainViewModel : ViewModel() {
         val list = ArrayList<WeatherModel>()
         val daysArray = mainObject.getJSONObject("forecast").getJSONArray("forecastday")
         val name = mainObject.getJSONObject("location").getString("name")
+        val gson = Gson()
         for (i in 0 until daysArray.length()) {
             val day = daysArray.getJSONObject(i)
+            val hoursJson = day.getJSONArray("hour").toString()
+            val type = object : TypeToken<List<HourItem>>() {}.type
+            val hours: List<HourItem> = gson.fromJson(hoursJson, type)
             val item = WeatherModel(
                 city = name,
                 time = day.getString("date"),
@@ -46,7 +53,7 @@ class MainViewModel : ViewModel() {
                     .toFloat().toInt().toString(),
                 imageUrl = day.getJSONObject("day")
                     .getJSONObject("condition").getString("icon"),
-                hours = day.getJSONArray("hour").toString()
+                hours = hours
             )
             list.add(item)
         }
@@ -70,4 +77,7 @@ class MainViewModel : ViewModel() {
         liveDataCurrent.value = item
     }
 }
+
+
+
 
