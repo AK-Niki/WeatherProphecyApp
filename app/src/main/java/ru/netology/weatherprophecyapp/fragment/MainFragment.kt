@@ -28,10 +28,10 @@ import ru.netology.weatherprophecyapp.DialogManager
 const val API_KEY = ""
 
 class MainFragment : Fragment() {
+    private var binding: FragmentMainBinding? = null
     private lateinit var locationManager: LocationManager
     private lateinit var locationListener: LocationListener
     private lateinit var pLauncher: ActivityResultLauncher<String>
-    private lateinit var binding: FragmentMainBinding
     private val model: MainViewModel by activityViewModels()
 
     private val fList = listOf(
@@ -40,13 +40,9 @@ class MainFragment : Fragment() {
     )
     private val tList = listOf("Hours", "Days")
 
-    override fun onCreateView(
-        inflater: android.view.LayoutInflater,
-        container: android.view.ViewGroup?,
-        savedInstanceState: Bundle?
-    ): android.view.View {
+    override fun onCreateView(inflater: android.view.LayoutInflater, container: android.view.ViewGroup?, savedInstanceState: Bundle?): android.view.View? {
         binding = FragmentMainBinding.inflate(inflater, container, false)
-        return binding.root
+        return binding?.root
     }
 
     override fun onViewCreated(view: android.view.View, savedInstanceState: Bundle?) {
@@ -61,34 +57,35 @@ class MainFragment : Fragment() {
         checkLocation()
     }
 
-    private fun init() = with(binding) {
-        locationManager = requireContext().getSystemService(Context.LOCATION_SERVICE) as LocationManager
-
-        locationListener = object : LocationListener {
-            override fun onLocationChanged(location: Location) {
-                requestWeatherData("${location.latitude},${location.longitude}")
-                locationManager.removeUpdates(this)
-            }
-            override fun onStatusChanged(provider: String?, status: Int, extras: Bundle?) {}
-            override fun onProviderEnabled(provider: String) {}
-            override fun onProviderDisabled(provider: String) {}
-        }
-
-        val adapter = VpAdapter(activity as FragmentActivity, fList)
-        vp.adapter = adapter
-        TabLayoutMediator(tabLayout, vp) { tab, pos ->
-            tab.text = tList[pos]
-        }.attach()
-        ibSync.setOnClickListener {
-            tabLayout.selectTab(tabLayout.getTabAt(0))
-            checkLocation()
-        }
-        ibSearch.setOnClickListener {
-            DialogManager.searchByNameDialog(requireContext(), object : DialogManager.Listener {
-                override fun onClick(name: String?) {
-                    name?.let { requestWeatherData(it) }
+    private fun init() {
+        binding?.let { bindingNonNull ->
+            locationManager = requireContext().getSystemService(Context.LOCATION_SERVICE) as LocationManager
+            locationListener = object : LocationListener {
+                override fun onLocationChanged(location: Location) {
+                    requestWeatherData("${location.latitude},${location.longitude}")
+                    locationManager.removeUpdates(this)
                 }
-            })
+                @Deprecated("Deprecated in Java")
+                override fun onStatusChanged(provider: String?, status: Int, extras: Bundle?) {}
+                override fun onProviderEnabled(provider: String) {}
+                override fun onProviderDisabled(provider: String) {}
+            }
+            val adapter = VpAdapter(activity as FragmentActivity, fList)
+            bindingNonNull.vp.adapter = adapter
+            TabLayoutMediator(bindingNonNull.tabLayout, bindingNonNull.vp) { tab, pos ->
+                tab.text = tList[pos]
+            }.attach()
+            bindingNonNull.ibSync.setOnClickListener {
+                bindingNonNull.tabLayout.selectTab(bindingNonNull.tabLayout.getTabAt(0))
+                checkLocation()
+            }
+            bindingNonNull.ibSearch.setOnClickListener {
+                DialogManager.searchByNameDialog(requireContext(), object : DialogManager.Listener {
+                    override fun onClick(name: String?) {
+                        name?.let { requestWeatherData(it) }
+                    }
+                })
+            }
         }
     }
 
@@ -106,13 +103,13 @@ class MainFragment : Fragment() {
 
     private fun isLocationEnabled(): Boolean {
         val lm = requireContext().getSystemService(Context.LOCATION_SERVICE) as LocationManager
-        return lm.isProviderEnabled(LocationManager.GPS_PROVIDER) ||
-                lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
+        return lm.isProviderEnabled(LocationManager.GPS_PROVIDER) || lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
     }
 
     private fun getLocation() {
         if (ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
-            ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED
+        ) {
             return
         }
         val gpsLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
@@ -121,24 +118,21 @@ class MainFragment : Fragment() {
         if (location != null) {
             requestWeatherData("${location.latitude},${location.longitude}")
         } else {
-            locationManager.requestLocationUpdates(
-                LocationManager.GPS_PROVIDER,
-                5000,
-                10f,
-                locationListener
-            )
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000, 10f, locationListener)
         }
     }
 
-    private fun updateCurrentCard() = with(binding) {
-        model.liveDataCurrent.observe(viewLifecycleOwner) {
-            val maxMinTemp = "${it.maxTemp}ºC / ${it.minTemp}ºC"
-            tvData.text = it.time
-            tvCity.text = it.city
-            tvCurrentTemp.text = if (it.currentTemp.isEmpty()) maxMinTemp else it.currentTemp
-            tvCondition.text = it.condition
-            tvMaxMin.text = if (it.currentTemp.isEmpty()) "" else maxMinTemp
-            Picasso.get().load("https:" + it.imageUrl).into(imWeather)
+    private fun updateCurrentCard() {
+        binding?.let { bindingNonNull ->
+            model.liveDataCurrent.observe(viewLifecycleOwner) {
+                val maxMinTemp = "${it.maxTemp}ºC / ${it.minTemp}ºC"
+                bindingNonNull.tvData.text = it.time
+                bindingNonNull.tvCity.text = it.city
+                bindingNonNull.tvCurrentTemp.text = if (it.currentTemp.isEmpty()) maxMinTemp else it.currentTemp
+                bindingNonNull.tvCondition.text = it.condition
+                bindingNonNull.tvMaxMin.text = if (it.currentTemp.isEmpty()) "" else maxMinTemp
+                Picasso.get().load("https:" + it.imageUrl).into(bindingNonNull.imWeather)
+            }
         }
     }
 
@@ -157,6 +151,11 @@ class MainFragment : Fragment() {
 
     private fun requestWeatherData(city: String) {
         model.fetchWeatherData(city, API_KEY)
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        binding = null
     }
 
     companion object {

@@ -15,30 +15,29 @@ import org.json.JSONArray
 import org.json.JSONObject
 
 class HoursFragment : Fragment() {
-    private lateinit var binding: FragmentHoursBinding
-    private lateinit var adapter: WeatherAdapter
+    private var binding: FragmentHoursBinding? = null
+    private var adapter: WeatherAdapter? = null
     private val model: MainViewModel by activityViewModels()
 
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         binding = FragmentHoursBinding.inflate(inflater, container, false)
-        return binding.root
+        return binding?.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         initRcView()
         model.liveDataCurrent.observe(viewLifecycleOwner) {
-            adapter.submitList(getHoursList(it))
+            adapter?.submitList(getHoursList(it))
         }
     }
 
-    private fun initRcView() = with(binding) {
-        rcView.layoutManager = LinearLayoutManager(activity)
-        adapter = WeatherAdapter(null)
-        rcView.adapter = adapter
+    private fun initRcView() {
+        binding?.let {
+            it.rcView.layoutManager = LinearLayoutManager(activity)
+            adapter = WeatherAdapter(null)
+            it.rcView.adapter = adapter
+        }
     }
 
     private fun getHoursList(wItem: WeatherModel): List<WeatherModel> {
@@ -58,6 +57,12 @@ class HoursFragment : Fragment() {
             list.add(item)
         }
         return list
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        binding = null
+        adapter = null
     }
 
     companion object {

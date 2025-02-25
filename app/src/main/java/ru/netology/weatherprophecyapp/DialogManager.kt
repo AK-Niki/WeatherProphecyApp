@@ -40,3 +40,4 @@ object DialogManager {
         fun onClick(name: String?)
     }
 }
+
