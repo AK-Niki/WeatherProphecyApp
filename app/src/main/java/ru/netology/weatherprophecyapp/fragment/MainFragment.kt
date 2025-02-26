@@ -19,9 +19,7 @@ import androidx.fragment.app.activityViewModels
 import com.google.android.material.tabs.TabLayoutMediator
 import com.squareup.picasso.Picasso
 import ru.netology.weatherprophecyapp.MainViewModel
-import ru.netology.weatherprophecyapp.R
 import ru.netology.weatherprophecyapp.adapters.VpAdapter
-import ru.netology.weatherprophecyapp.adapters.WeatherModel
 import ru.netology.weatherprophecyapp.databinding.FragmentMainBinding
 import ru.netology.weatherprophecyapp.DialogManager
 

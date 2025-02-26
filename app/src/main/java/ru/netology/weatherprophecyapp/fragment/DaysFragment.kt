@@ -8,7 +8,6 @@ import android.view.ViewGroup
 import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import ru.netology.weatherprophecyapp.MainViewModel
-import ru.netology.weatherprophecyapp.R
 import ru.netology.weatherprophecyapp.adapters.WeatherAdapter
 import ru.netology.weatherprophecyapp.adapters.WeatherModel
 import ru.netology.weatherprophecyapp.databinding.FragmentDaysBinding

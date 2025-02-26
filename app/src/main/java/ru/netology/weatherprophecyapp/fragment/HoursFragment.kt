@@ -7,11 +7,9 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.LinearLayoutManager
 import ru.netology.weatherprophecyapp.adapters.HourAdapter
-import ru.netology.weatherprophecyapp.adapters.HourItem
 import ru.netology.weatherprophecyapp.databinding.FragmentHoursBinding
 import androidx.fragment.app.activityViewModels
 import ru.netology.weatherprophecyapp.MainViewModel
-import ru.netology.weatherprophecyapp.adapters.WeatherModel
 
 class HoursFragment : Fragment() {
     private var binding: FragmentHoursBinding? = null
