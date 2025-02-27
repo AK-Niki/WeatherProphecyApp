@@ -1,5 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">WeatherProphecyApp</string>
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+
+    <string name="location_enable_title">Enable location?</string>
+    <string name="location_enable_message">Location disabled, do you want to enable location?</string>
+    <string name="ok">OK</string>
+    <string name="cancel">Cancel</string>
+    <string name="city_name_title">City name:</string>
 </resources>

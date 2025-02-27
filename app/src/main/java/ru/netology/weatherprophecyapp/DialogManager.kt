@@ -8,13 +8,13 @@ object DialogManager {
     fun locationSettingsDialog(context: Context, listener: Listener) {
         val builder = AlertDialog.Builder(context)
         val dialog = builder.create()
-        dialog.setTitle("Enable location?")
-        dialog.setMessage("Location disabled, do you want enable location?")
-        dialog.setButton(AlertDialog.BUTTON_POSITIVE, "OK") { _, _ ->
+        dialog.setTitle(context.getString(R.string.location_enable_title))
+        dialog.setMessage(context.getString(R.string.location_enable_message))
+        dialog.setButton(AlertDialog.BUTTON_POSITIVE, context.getString(R.string.ok)) { _, _ ->
             listener.onClick(null)
             dialog.dismiss()
         }
-        dialog.setButton(AlertDialog.BUTTON_NEGATIVE, "Cancel") { _, _ ->
+        dialog.setButton(AlertDialog.BUTTON_NEGATIVE, context.getString(R.string.cancel)) { _, _ ->
             dialog.dismiss()
         }
         dialog.show()
@@ -25,12 +25,12 @@ object DialogManager {
         val edName = EditText(context)
         builder.setView(edName)
         val dialog = builder.create()
-        dialog.setTitle("City name:")
-        dialog.setButton(AlertDialog.BUTTON_POSITIVE, "OK") { _, _ ->
+        dialog.setTitle(context.getString(R.string.city_name_title))
+        dialog.setButton(AlertDialog.BUTTON_POSITIVE, context.getString(R.string.ok)) { _, _ ->
             listener.onClick(edName.text.toString())
             dialog.dismiss()
         }
-        dialog.setButton(AlertDialog.BUTTON_NEGATIVE, "Cancel") { _, _ ->
+        dialog.setButton(AlertDialog.BUTTON_NEGATIVE, context.getString(R.string.cancel)) { _, _ ->
             dialog.dismiss()
         }
         dialog.show()
@@ -40,4 +40,5 @@ object DialogManager {
         fun onClick(name: String?)
     }
 }
+
 

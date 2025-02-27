@@ -1,5 +1,6 @@
 package ru.netology.weatherprophecyapp.adapters
 
+import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.ListAdapter
@@ -10,6 +11,7 @@ import com.squareup.picasso.Picasso
 class HourAdapter : ListAdapter<HourItem, HourAdapter.HourHolder>(HourComparator()) {
 
     class HourHolder(private val binding: ListItemBinding) : RecyclerView.ViewHolder(binding.root) {
+        @SuppressLint("SetTextI18n")
         fun bind(item: HourItem) = with(binding) {
             tvDate.text = item.time
             tvTemp.text = "${item.tempC}ºC"
